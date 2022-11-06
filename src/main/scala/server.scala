@@ -1,30 +1,46 @@
-import scala.util.control.Breaks.break
-import org.postgresql
-import sun.security.util.Password
-
-import java.sql
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.ClassNotFoundException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.sql.{Connection, DriverManager, ResultSet, SQLException, Statement}
 
-object server {
+object serverApp {
+  private val port: Int = 9876
+  private val server: ServerSocket = new ServerSocket(port)
+
   val url: String = "jdbc:postgresql://localhost/client-server"
   val user: String = "test"
   val password: String = "test"
 
   def main(args: Array[String]) = {
-    while (true) {
-      println("1 - Add user, 2 - Enter chat, 3 - Close application")
-      scala.io.StdIn.readLine() match {
-        case "1" => {
-          addPerson()
-          //        implement adding user to database
-        }
-        case "2" => {
-          //        implement chat entering with loading history
-        }
-        case "3" => System.exit(0)
-        case  _ =>
-      }
-    }
+    println("Waiting for the client request");
+    val socket: Socket = server.accept()
+    val ois: ObjectInputStream = new ObjectInputStream(socket.getInputStream())
+    val message: String = ois.readObject().toString
+    println("Message Received: " + message);
+    val oos: ObjectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+    oos.writeObject("Hi Client "+message)
+    ois.close();
+    oos.close();
+    socket.close();
+    //terminate the server if client sends exit request
+    if(message.equalsIgnoreCase("exit")) System.exit(0)
+    //    while (true) {
+//      println("1 - Add user, 2 - Enter chat, 3 - Close application")
+//      scala.io.StdIn.readLine() match {
+//        case "1" => {
+//          addPerson()
+//          //        implement adding user to database
+//        }
+//        case "2" => {
+//          //        implement chat entering with loading history
+//        }
+//        case "3" => System.exit(0)
+//        case  _ =>
+//      }
+//    }
   }
 
   def connect(user: String = "test", password: String = "test"): Connection = {
@@ -53,18 +69,13 @@ object server {
     }
   }
 
-
-  def testIsPersonExists(): Unit = {
-
-  }
-
   def addPerson(): Unit = {
     print("Enter username: ")
     val username: String = scala.io.StdIn.readLine()
     print("\nEnter password: ")
     val password: String = scala.io.StdIn.readLine()
     if (isPersonExists(username)) {
-      println("person already exists")
+      println("User already exists")
     }
     else {
       val query: String = s"""insert into chat.users (username, password) values ('$username', '$password')"""
