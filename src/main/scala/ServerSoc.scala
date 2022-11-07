@@ -38,7 +38,6 @@ object ServerSoc extends App{
     try {
       val con: Connection = connectToDb(user, password)
       val stmt: Statement = con.createStatement()
-      val query: String = s"select 1 from chat.users where username = ${name}"
       val rs: ResultSet = stmt.executeQuery(s"select 1 from chat.users where username = '${name}'")
       rs.next() match {
         case true => true
