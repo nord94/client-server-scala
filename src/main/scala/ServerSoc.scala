@@ -14,20 +14,17 @@ object ServerSoc extends App{
   val serverSocket: ServerSocket = null
   val clientSocket :Socket = null
 
-  def addPerson(): Unit = {
-    print("Enter username: ")
-    val username: String = scala.io.StdIn.readLine()
-    print("\nEnter password: ")
-    val password: String = scala.io.StdIn.readLine()
+  def addPerson(username: String): String = {
     if (isPersonExists(username)) {
-      println("person already exists")
+      "User already exists."
     }
     else {
-      val query: String = s"""insert into chat.users (username, password) values ('$username', '$password')"""
+      print("\nEnter password: ")
+      val query: String = s"""insert into chat.users (username, password) values ('$username', '${scala.io.StdIn.readLine()}')"""
       val con: Connection = connectToDb()
       con.createStatement().executeUpdate(query)
       con.close()
-      println(s"User (name = '$username', password = '$password') successfully added")
+      "User successfully added"
     }
   }
   def enterChat(): Unit = {
